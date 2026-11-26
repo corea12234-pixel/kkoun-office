@@ -25,4 +25,4 @@
 
 ## 배포
 
-GitHub Pages, `main` 브랜치 루트. `.nojekyll` 포함. 별도 빌드 단계 없음.
+GitHub Pages는 `gh-pages` 브랜치 루트에서 배포됩니다(`main`과 내용 동일하게 유지). `.nojekyll` 포함, 별도 빌드 단계 없음.

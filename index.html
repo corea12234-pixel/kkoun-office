@@ -808,7 +808,7 @@
     var box = document.getElementById("chatBox");
     if(!box) return;
     var top = box.getBoundingClientRect().top;
-    var avail = window.innerHeight - top - 212;
+    var avail = window.innerHeight - top - 226;
     avail = Math.max(170, Math.min(avail, Math.round(window.innerHeight*0.66)));
     box.style.maxHeight = avail + "px";
     box.scrollTop = box.scrollHeight;
