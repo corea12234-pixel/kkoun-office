@@ -164,10 +164,10 @@
   /* dogs */
   .dog-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .dog{
-    display:flex;align-items:center;gap:9px;padding:9px;border-radius:16px;
+    display:flex;align-items:flex-start;gap:9px;padding:9px;border-radius:16px;
     background:var(--card3);border:1px solid var(--line);
   }
-  .dog .ava{width:40px;height:40px;flex:0 0 40px;border-radius:50%;overflow:hidden;background:var(--card)}
+  .dog .ava{width:42px;height:42px;flex:0 0 42px;border-radius:50%;overflow:hidden;background:var(--card)}
   .dog .ava svg{width:100%;height:100%;display:block}
   .dog .nm{font-size:13px;font-weight:800;line-height:1.2}
   .dog .br{font-size:10.5px;color:var(--muted)}
@@ -175,8 +175,9 @@
   .dog.off{opacity:.55}
   .dog.off .st{color:var(--muted);background:var(--card2)}
   .dog{cursor:pointer}
-  .dog .dtxt{display:flex;flex-direction:column;gap:2px;min-width:0}
-  .dog .drl{font-size:9.5px;color:var(--sub);line-height:1.35;word-break:keep-all;letter-spacing:-.2px}
+  .dog .dtxt{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:left;align-items:flex-start;padding-top:1px}
+  .dog .drl{font-size:10px;color:var(--sub);line-height:1.4;word-break:keep-all;letter-spacing:-.2px}
+  .dog .nm em{font-style:normal;font-weight:600;font-size:10px;color:var(--muted);margin-left:3px;letter-spacing:-.2px}
   .dog:active{transform:scale(.985)}
 
   /* meeting */
@@ -704,8 +705,7 @@
       var on = !!S.assistants[d.id];
       html += '<div class="dog '+(on?"":"off")+'" data-act="dog-toggle" data-id="'+d.id+'" role="button" tabindex="0" aria-pressed="'+on+'">'
         + '<span class="ava">'+dogSVG(d.id)+'</span>'
-        + '<span class="dtxt"><span class="nm">'+d.name+'</span>'
-        + '<span class="br">'+d.breed+'</span>'
+        + '<span class="dtxt"><span class="nm">'+d.name+'<em>'+d.breed+'</em></span>'
         + '<span class="drl">'+d.role+'</span>'
         + '<span class="st">'+(on?"출근":"퇴근")+'</span></span>'
         + '</div>';
