@@ -171,10 +171,12 @@
   .dog .ava svg{width:100%;height:100%;display:block}
   .dog .nm{font-size:13px;font-weight:800;line-height:1.2}
   .dog .br{font-size:10.5px;color:var(--muted)}
-  .dog .st{margin-top:3px;font-size:10.5px;font-weight:800;color:var(--brown);background:var(--accent-soft);border-radius:999px;padding:2px 7px;display:inline-block}
+  .dog .st{margin-top:3px;font-size:10.5px;font-weight:800;color:var(--brown);background:var(--accent-soft);border-radius:999px;padding:2px 7px;display:inline-block;align-self:flex-start}
   .dog.off{opacity:.55}
   .dog.off .st{color:var(--muted);background:var(--card2)}
   .dog{cursor:pointer}
+  .dog .dtxt{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .dog .drl{font-size:9.5px;color:var(--sub);line-height:1.35;word-break:keep-all;letter-spacing:-.2px}
   .dog:active{transform:scale(.985)}
 
   /* meeting */
@@ -187,19 +189,20 @@
     padding:9px 6px;border-radius:999px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;
   }
   .subtabs button.on{background:var(--card);color:var(--brown);box-shadow:0 2px 8px rgba(139,90,43,.12)}
-  .roles{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
+  .roles{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
   .role{
-    flex:0 0 128px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px;
+    flex:1 0 60px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:8px 4px;
     box-shadow:var(--shadow);cursor:pointer;text-align:center;position:relative;
   }
-  .role .ava{width:46px;height:46px;margin:0 auto 6px;border-radius:50%;overflow:hidden;background:var(--card3);border:1px solid var(--line)}
+  .role .ava{width:38px;height:38px;margin:0 auto 4px;border-radius:50%;overflow:hidden;background:var(--card3);border:1px solid var(--line)}
   .role .ava svg{width:100%;height:100%;display:block}
-  .role .nm{font-size:12.5px;font-weight:800}
-  .role .br{font-size:10px;color:var(--muted);margin-bottom:4px}
-  .role .rl{font-size:10.5px;color:var(--sub);line-height:1.35;letter-spacing:-.2px;word-break:keep-all}
+  .role .nm{font-size:11px;font-weight:800;letter-spacing:-.3px}
+  .role .br{font-size:9.5px;color:var(--muted);margin-top:1px}
   .role.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft), var(--shadow)}
-  .role.on::after{content:"🐾";position:absolute;top:6px;right:8px;font-size:10px}
+  .role.on::after{content:"🐾";position:absolute;top:3px;right:5px;font-size:9px}
   .role:active{transform:scale(.98)}
+  .roleline{font-size:11.5px;color:var(--sub);margin:-4px 2px 10px;line-height:1.45;word-break:keep-all}
+  .roleline b{color:var(--brown)}
 
   .roombar{
     display:flex;align-items:center;justify-content:space-between;gap:8px;
@@ -208,7 +211,7 @@
   }
   .roombar span.s{font-weight:700;font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:4px}
 
-  .chat{display:flex;flex-direction:column;gap:12px;padding:2px;max-height:48vh;overflow-y:auto;scroll-behavior:smooth}
+  .chat{display:flex;flex-direction:column;gap:12px;padding:2px;max-height:46vh;overflow-y:auto;scroll-behavior:smooth}
   .chat::-webkit-scrollbar{width:4px}
   .chat::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px}
   .msg{display:flex;gap:8px;align-items:flex-start;max-width:100%}
@@ -701,7 +704,9 @@
       var on = !!S.assistants[d.id];
       html += '<div class="dog '+(on?"":"off")+'" data-act="dog-toggle" data-id="'+d.id+'" role="button" tabindex="0" aria-pressed="'+on+'">'
         + '<span class="ava">'+dogSVG(d.id)+'</span>'
-        + '<span><span class="nm">'+d.name+'</span><br><span class="br">'+d.breed+'</span><br>'
+        + '<span class="dtxt"><span class="nm">'+d.name+'</span>'
+        + '<span class="br">'+d.breed+'</span>'
+        + '<span class="drl">'+d.role+'</span>'
         + '<span class="st">'+(on?"출근":"퇴근")+'</span></span>'
         + '</div>';
     });
@@ -746,16 +751,19 @@
 
     html += '<div class="roles">' + DOGS.map(function(d){
       var sel = (room==="command" && cmdTarget===d.id);
-      return '<div class="role '+(sel?"on":"")+'" data-act="target" data-id="'+d.id+'" role="button" tabindex="0" aria-pressed="'+sel+'">'
+      return '<div class="role '+(sel?"on":"")+'" data-act="target" data-id="'+d.id+'" role="button" tabindex="0" aria-pressed="'+sel+'" aria-label="'+d.name+' '+d.breed+'에게 지시">'
         + '<div class="ava">'+dogSVG(d.id)+'</div>'
         + '<div class="nm">'+d.name+'</div>'
         + '<div class="br">'+d.breed+'</div>'
-        + '<div class="rl">'+d.role+'</div>'
         + '</div>';
     }).join("") + '</div>';
 
-    html += '<div class="roombar">🐾 '+(room==="command"?"지휘실 · "+dogById(cmdTarget).name+"에게 한 줄":"꼬운님 전용 기록실")
+    var selDog = dogById(cmdTarget);
+    html += '<div class="roombar">🐾 '+(room==="command"?"지휘실 · "+selDog.name+"에게 한 줄":"꼬운님 전용 기록실")
       + '<span class="s">💾 이 기기 저장</span></div>';
+    if(room === "command"){
+      html += '<p class="roleline"><b>'+selDog.name+'</b> · '+selDog.role+'</p>';
+    }
 
     html += '<div class="card" style="padding:13px">';
     html += '<div class="chat" id="chatBox">';
@@ -792,7 +800,20 @@
     el.innerHTML = html;
     var box = document.getElementById("chatBox");
     if(box) box.scrollTop = box.scrollHeight;
+    fitChat();
   }
+
+  /* 화면에 남는 높이만큼 대화창을 채움 */
+  function fitChat(){
+    var box = document.getElementById("chatBox");
+    if(!box) return;
+    var top = box.getBoundingClientRect().top;
+    var avail = window.innerHeight - top - 188;
+    avail = Math.max(170, Math.min(avail, Math.round(window.innerHeight*0.66)));
+    box.style.maxHeight = avail + "px";
+    box.scrollTop = box.scrollHeight;
+  }
+  window.addEventListener("resize", function(){ if(curTab==="meet") fitChat(); });
 
   function activeRoomLabel(){
     for(var i=0;i<ROOMS.length;i++){ if(ROOMS[i].id===room) return ROOMS[i].label; }
