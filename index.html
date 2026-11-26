@@ -72,6 +72,14 @@
     white-space:nowrap; box-shadow:0 2px 8px rgba(124,82,201,.12);
   }
   html[data-theme="dusk"] .serv{background:#3A3152; border-color:#584A78; color:#DCC9FF; box-shadow:none}
+  .serv .live-dot{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;box-shadow:0 0 0 3px rgba(127,169,107,.18)}
+  .serv.live{background:#EEFAEE; border-color:#BFE6B6; color:#3F7C4B}
+  html[data-theme="dusk"] .serv.live{background:#22331F; border-color:#3F5B37; color:#A9E39B}
+  .serv.live .live-dot{animation:livePulse 1.9s ease-in-out infinite}
+  @keyframes livePulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .serv.wait, .serv.data{background:#F4F0FF; border-color:#DCD1F6; color:#7B63B0}
+  html[data-theme="dusk"] .serv.wait, html[data-theme="dusk"] .serv.data{background:#332C48; border-color:#4A4068; color:#C3B6E6}
+  .serv[data-act]{cursor:pointer}
   .icon-btn{
     width:38px;height:38px;flex:0 0 38px;border-radius:50%;border:1px solid var(--line2);
     background:var(--card); color:var(--text); font-size:16px; display:grid;place-items:center;cursor:pointer;
@@ -213,6 +221,7 @@
   }
   .roombar span.s{font-weight:700;font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:4px}
 
+  .daysep{text-align:center;font-size:10.5px;font-weight:800;color:var(--muted);letter-spacing:-.2px;margin:2px 0}
   .chat{display:flex;flex-direction:column;gap:12px;padding:2px;max-height:46vh;overflow-y:auto;scroll-behavior:smooth}
   .chat::-webkit-scrollbar{width:4px}
   .chat::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px}
@@ -236,6 +245,8 @@
   html[data-theme="dusk"] .msg.me .bubble{background:linear-gradient(160deg,#C6ACF7,#A585EA);color:#241E33;border-color:#A585EA}
   .msg.me .avatar-paw{width:34px;height:34px;flex:0 0 34px;border-radius:50%;background:var(--accent-soft);display:grid;place-items:center;font-size:15px}
   .tagx{display:inline-block;font-size:10.5px;font-weight:800;background:rgba(255,255,255,.22);border-radius:999px;padding:1px 7px;margin-right:5px}
+  .failx{display:inline-block;font-size:10.5px;font-weight:800;background:rgba(255,255,255,.20);border-radius:999px;padding:1px 7px;margin-left:5px}
+  .msg .ava.pawface{display:grid;place-items:center;font-size:15px;background:var(--accent-soft)}
   .empty{
     text-align:center;color:var(--muted);font-size:12.5px;padding:18px 10px;line-height:1.7;
   }
@@ -390,7 +401,7 @@
         <div class="hdr-sub"><span class="dot"></span> 꼬운님 전용 · <span id="hdrDate"></span></div>
       </div>
       <div class="hdr-right">
-        <span class="serv">🐾 AI 서버</span>
+        <span class="serv" id="servBadge" data-act="retry-sb" role="button" tabindex="0" aria-live="polite" title="서버 연결 상태">🐾 로컬 모드</span>
         <button class="icon-btn" id="themeBtn" aria-label="테마 바꾸기 (낮/밤)">☀️</button>
       </div>
     </div>
@@ -407,8 +418,8 @@
   </main>
 
   <p class="foot">
-    <b>🐾 안내</b> — 이 오피스는 GitHub Pages로 열리는 정적 앱이에요. 적은 내용은 <b>이 기기 브라우저(localStorage)</b>에만 저장되고,
-    다른 기기·다른 브라우저와 자동으로 맞춰지지 않아요. 브라우저 기록을 지우면 함께 사라집니다.
+    <b>🐾 안내</b> — 회의실 대화는 <b>실시간 서버</b>에 저장돼서 기기와 상관없이 함께 보여요.
+    루틴·체험단·메모 같은 나머지 기록은 <b>이 기기 브라우저(localStorage)</b>에만 저장되고, 브라우저 기록을 지우면 함께 사라집니다.
   </p>
 
   <nav class="bottom" id="bottom" aria-label="하단 메뉴">
@@ -419,6 +430,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
   "use strict";
@@ -513,6 +525,193 @@
     {id:"ssug",   name:"쑥",     breed:"비숑",    role:"체험단 후보 · 맞댓글 소통"}
   ];
   function dogById(id){ for(var i=0;i<DOGS.length;i++){ if(DOGS[i].id===id) return DOGS[i]; } return DOGS[0]; }
+
+  /* ------------------------------------------------------------------ *
+   *  Supabase 실시간 연결 (회의실)
+   *  - 공개용 Publishable Key만 사용합니다. Secret(service_role) 키는 넣지 마세요.
+   *  - DB 테이블: public.office_messages (id, room, sender, target, text, created_at)
+   *  - room 값: all(대회의실) / cmd(지휘실) / lounge(라운지)
+   * ------------------------------------------------------------------ */
+  var SB_URL   = "https://fqzwgwflrodlyrxopdyj.supabase.co";
+  var SB_KEY   = "sb_publishable_LX0xy5dGwTiTI1pm_Jl3YA_SBLIHUzQ";
+  var SB_TABLE = "office_messages";
+  var SB_ROOM_OF   = { main:"all", command:"cmd", lounge:"lounge" };
+  var SB_ROOM_BACK = { all:"main", cmd:"command", lounge:"lounge" };
+
+  var sb = null;          // supabase 클라이언트
+  var sbChannel = null;   // realtime 채널
+  var sbLive = false;     // realtime 구독 정상
+  var sbData = false;     // 최근 메시지 select 성공
+  var sbTrying = false;   // 연결 시도 중
+  var remote = { main:[], command:[], lounge:[] };   // 서버에서 받은 메시지
+  var remoteSeen = {};    // id 기준 중복 방지
+  var pending = [];       // 전송 중인 내 메시지(즉시 표시)
+  var meetForceBottom = false;
+
+  function sbRoomOf(appRoom){ return SB_ROOM_OF[appRoom] || "all"; }
+
+  function whoOf(sender){
+    var raw = String(sender == null ? "" : sender).trim();
+    var s = raw.replace(/^@+/, "").toLowerCase();
+    if(!s) return {who:"other", name:"알 수 없음"};
+    if(/^(꼬운|kkoun|me$|user|owner)/.test(s)) return {who:"me", name:"꼬운님"};
+    if(/^(짱아찌|jjang)/.test(s)) return {who:"jjang", name:"짱아찌"};
+    if(/^(토코|toko)/.test(s)) return {who:"toko", name:"토코"};
+    if(/^(팔릴까|pallil)/.test(s)) return {who:"pallil", name:"팔릴까"};
+    if(/^(쑥|ssug)/.test(s)) return {who:"ssug", name:"쑥"};
+    return {who:"other", name:raw.slice(0,20) || "알 수 없음"};
+  }
+
+  function hmOf(iso){
+    if(!iso) return nowHM();
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return nowHM();
+    return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);
+  }
+
+  function msgTs(m){
+    if(m.iso){ var d = new Date(m.iso); if(!isNaN(d.getTime())) return d.getTime(); }
+    if(m.t && /^\d{1,2}:\d{2}$/.test(m.t)){
+      var p = String(m.t).split(":"), d2 = new Date();
+      d2.setHours(parseInt(p[0],10), parseInt(p[1],10), 0, 0);
+      return d2.getTime();
+    }
+    return 0;
+  }
+
+  /* 한 방의 메시지 = 기기 기록 + 서버 기록 + 전송 중인 내 메시지 */
+  function roomMessages(appRoom){
+    var list = (S.chat[appRoom] || []).concat(remote[appRoom] || []);
+    for(var i=0;i<pending.length;i++){
+      if(pending[i].room === appRoom) list.push(pending[i]);
+    }
+    list.sort(function(a,b){ return msgTs(a) - msgTs(b); });
+    return list;
+  }
+
+  /* 서버에서 온 메시지 한 건 반영 (id 중복은 무시) */
+  function addRemoteRow(row){
+    if(!row) return false;
+    var key = (row.id != null && row.id !== "")
+      ? String(row.id)
+      : String(row.created_at || "")+"|"+String(row.sender || "")+"|"+String(row.text || "");
+    if(remoteSeen[key]) return false;
+    remoteSeen[key] = true;
+
+    var code = String(row.room || "all").toLowerCase();
+    var appRoom = SB_ROOM_BACK[code] || "main";
+    var w = whoOf(row.sender);
+    var msg = {
+      dbid: key, who: w.who, name: w.name, room: appRoom,
+      text: String(row.text == null ? "" : row.text),
+      t: hmOf(row.created_at), iso: row.created_at || "",
+      target: row.target || "", tag: ""
+    };
+    if(!remote[appRoom]) remote[appRoom] = [];
+    remote[appRoom].push(msg);
+
+    if(w.who === "me") resolvePending(msg);
+    if(curTab === "meet") renderMeet();
+    return true;
+  }
+
+  /* 내가 보낸 메시지의 서버 에코가 오면 전송 중 표시를 없앰 */
+  function resolvePending(msg){
+    for(var i=0;i<pending.length;i++){
+      var p = pending[i];
+      if(p.room === msg.room && p.text === msg.text && !p.failed){
+        pending.splice(i,1);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function paintServ(){
+    var el = document.getElementById("servBadge");
+    if(!el) return;
+    if(sbLive && sbData){
+      el.className = "serv live";
+      el.innerHTML = '<span class="live-dot"></span>실시간 연결';
+      el.title = "Supabase 실시간 연결됨 · 눌러서 다시 연결";
+    } else if(sbTrying){
+      el.className = "serv wait";
+      el.innerHTML = '<span class="live-dot"></span>연결 중';
+      el.title = "서버에 연결하는 중이에요";
+    } else if(sbData || sbLive){
+      el.className = "serv data";
+      el.innerHTML = '<span class="live-dot"></span>서버 연결';
+      el.title = sbData
+        ? "기록은 서버에서 불러왔어요 · 실시간 수신은 연결 중 · 눌러서 다시 연결"
+        : "실시간 연결은 됐지만 테이블을 읽지 못했어요 · 읽기 권한을 확인해 주세요";
+    } else {
+      el.className = "serv";
+      el.innerHTML = '🐾 로컬 모드';
+      el.title = "서버에 연결하지 못했어요 · 적은 내용은 이 기기에만 저장 · 눌러서 다시 연결";
+    }
+  }
+
+  function sbLoadRecent(){
+    if(!sb) return;
+    try{
+      sb.from(SB_TABLE)
+        .select("id,room,sender,target,text,created_at")
+        .order("created_at", { ascending:false })
+        .limit(100)
+        .then(function(res){
+          sbTrying = false;
+          if(res && !res.error && Array.isArray(res.data)){
+            sbData = true;
+            res.data.slice().reverse().forEach(addRemoteRow);
+            if(curTab === "meet"){ meetForceBottom = true; renderMeet(); }
+          }
+          paintServ();
+        }, function(){
+          sbTrying = false;
+          paintServ();
+        });
+    }catch(e){ sbTrying = false; paintServ(); }
+  }
+
+  function sbWatch(){
+    if(!sb) return;
+    try{
+      if(sbChannel){ try{ sb.removeChannel(sbChannel); }catch(e){} sbChannel = null; }
+      sbChannel = sb.channel("office_messages_rt")
+        .on("postgres_changes", { event:"INSERT", schema:"public", table:SB_TABLE }, function(payload){
+          if(payload && payload.new) addRemoteRow(payload.new);
+        })
+        .subscribe(function(status){
+          if(status === "SUBSCRIBED"){ sbLive = true; }
+          else if(status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED"){ sbLive = false; }
+          paintServ();
+          if(curTab === "meet") renderMeet();
+        });
+    }catch(e){ sbLive = false; paintServ(); }
+  }
+
+  function sbInit(){
+    if(sbLive) return;
+    if(!window.supabase || typeof window.supabase.createClient !== "function"){
+      sbTrying = false; paintServ(); return;
+    }
+    sbTrying = true; paintServ();
+    try{
+      if(!sb) sb = window.supabase.createClient(SB_URL, SB_KEY);
+    }catch(e){ sb = null; sbTrying = false; paintServ(); return; }
+    sbLoadRecent();
+    sbWatch();
+  }
+
+  function pushLocalMsg(text, tag, failed, targetRoom){
+    var r = targetRoom || room;
+    if(!S.chat[r]) S.chat[r] = [];
+    var m = { id:uid(), who:"me", text:text, t:nowHM(), tag:(tag||"") };
+    if(failed) m.failed = true;
+    S.chat[r].push(m);
+    save();
+    return m;
+  }
 
   /* ------------------------------------------------------------------ *
    *  상태 저장
@@ -917,8 +1116,29 @@
     {id:"lounge",  label:"라운지",  emoji:"☕"}
   ];
 
+  function msgDay(m){
+    var d = null;
+    if(m.iso){ var x = new Date(m.iso); if(!isNaN(x.getTime())) d = x; }
+    if(!d) d = new Date();
+    return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);
+  }
+  function dayLabel(m){
+    var p = msgDay(m).split("-");
+    var d = new Date(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10));
+    var wk = ["일","월","화","수","목","금","토"][d.getDay()];
+    return (d.getMonth()+1)+"월 "+d.getDate()+"일 ("+wk+")";
+  }
+
   function renderMeet(){
     var el = document.getElementById("p-meet");
+    var prevInput = document.getElementById("chatInput");
+    var typed = prevInput ? prevInput.value : "";
+    var hadFocus = !!(prevInput && document.activeElement === prevInput);
+    var prevBox = document.getElementById("chatBox");
+    var prevScroll = prevBox ? prevBox.scrollTop : 0;
+    var stickBottom = prevBox ? (prevBox.scrollHeight - prevBox.scrollTop - prevBox.clientHeight < 56) : true;
+    if(meetForceBottom){ stickBottom = true; meetForceBottom = false; }
+
     var html = "";
 
     html += '<div class="subtabs">' + ROOMS.map(function(r){
@@ -935,24 +1155,38 @@
     }).join("") + '</div>';
 
     var selDog = dogById(cmdTarget);
-    html += '<div class="roombar">🐾 '+(room==="command"?"지휘실 · "+selDog.name+"에게 한 줄":"꼬운님 전용 기록실")
-      + '<span class="s">💾 이 기기 저장</span></div>';
+    var barNote = (sbLive && sbData) ? "🌐 실시간" : "💾 이 기기 저장";
+    html += '<div class="roombar">🐾 '+(room==="command"?"지휘실 · "+selDog.name+"에게 한 줄":"꼬운님 전용 회의실")
+      + '<span class="s">'+barNote+'</span></div>';
     if(room === "command"){
       html += '<p class="roleline"><b>'+selDog.name+'</b> · '+selDog.role+'</p>';
     }
 
     html += '<div class="card" style="padding:13px">';
     html += '<div class="chat" id="chatBox">';
-    var msgs = S.chat[room] || [];
+    var msgs = roomMessages(room);
     if(!msgs.length){
       html += '<div class="empty"><b>🐾</b>아직 대화가 없어요.<br>아래에 한 줄 적어 두면 여기에 남습니다.</div>';
     }
+    var lastDay = "";
     msgs.forEach(function(m){
+      var day = msgDay(m);
+      if(day !== lastDay){
+        lastDay = day;
+        html += '<div class="daysep">'+dayLabel(m)+'</div>';
+      }
       if(m.who === "me"){
         html += '<div class="msg me">'
           + '<div class="avatar-paw">🐾</div>'
           + '<div class="body"><div class="who">꼬운님 <em>'+esc(m.t||"")+'</em></div>'
-          + '<div class="bubble">'+(m.tag?'<span class="tagx">@'+esc(m.tag)+'</span>':'')+esc(m.text)+'</div></div>'
+          + '<div class="bubble">'+(m.tag?'<span class="tagx">@'+esc(m.tag)+'</span>':'')+esc(m.text)
+          + (m.failed?'<span class="failx">전송 실패 · 기기 저장</span>':'')+'</div></div>'
+          + '</div>';
+      } else if(m.who === "other"){
+        html += '<div class="msg">'
+          + '<span class="ava pawface">🐾</span>'
+          + '<div class="body"><div class="who">'+esc(m.name||"알 수 없음")+' <em>'+esc(m.t||"")+'</em></div>'
+          + '<div class="bubble">'+esc(m.text)+'</div></div>'
           + '</div>';
       } else {
         var d = dogById(m.who);
@@ -971,12 +1205,22 @@
       + '<input id="chatInput" name="chat" placeholder="꼬운님, 지시를 한 줄로 (@all = 전원)" autocomplete="off" maxlength="300">'
       + '<button class="send" data-act="send">보내기</button>'
       + '</div>';
-    html += '<p class="hint" style="text-align:center">기기에 기록만 돼요 · 실제 전달은 짱아찌와의 채팅에서 🐾</p>';
+    if(sbLive && sbData){
+      html += '<p class="hint" style="text-align:center">AI 비서 보고가 실시간으로 도착해요 · 새로고침 없이 바로 보여요 🐾</p>';
+    } else if(sb){
+      html += '<p class="hint" style="text-align:center">서버 연결 확인 중 · 지금 적은 내용은 이 기기에도 남겨 둘게요 🐾</p>';
+    } else {
+      html += '<p class="hint" style="text-align:center">서버에 연결하지 못했어요 · 적은 내용은 이 기기에만 남아요 🐾</p>';
+    }
 
     el.innerHTML = html;
     var box = document.getElementById("chatBox");
-    if(box) box.scrollTop = box.scrollHeight;
+    var input = document.getElementById("chatInput");
+    if(input && typed) input.value = typed;
+    if(box){ box.scrollTop = stickBottom ? box.scrollHeight : prevScroll; }
+    if(input && hadFocus){ try{ input.focus(); }catch(e){} }
     fitChat();
+    if(box && !stickBottom) box.scrollTop = prevScroll;
   }
 
   /* 화면에 남는 높이만큼 대화창을 채움 */
@@ -1007,12 +1251,63 @@
       tag = (mm[1]==="전원") ? "all" : mm[1];
       raw = raw.slice(mm[0].length) || (tag==="all" ? "전원 지시" : tag+" 지시");
     }
-    if(!S.chat[room]) S.chat[room] = [];
-    S.chat[room].push({id:uid(), who:"me", text:raw, t:nowHM(), tag:tag});
-    save();
     input.value = "";
+
+    var myRoom = room;
+    var prefix = "🐾 " + (tag ? "@"+(tag==="all"?"전원":tag)+" " : "") + activeRoomLabel() + "에 ";
+
+    /* 서버가 없으면 기존처럼 기기에만 저장 */
+    if(!sb){
+      pushLocalMsg(raw, tag, false, myRoom);
+      meetForceBottom = true;
+      renderMeet();
+      toast(prefix + "기기에 기록했어요");
+      var again = document.getElementById("chatInput");
+      if(again) again.focus();
+      return;
+    }
+
+    var p = { tmpId:uid(), room:myRoom, who:"me", text:raw, tag:tag,
+              t:nowHM(), iso:new Date().toISOString(), sending:true };
+    pending.push(p);
+    meetForceBottom = true;
     renderMeet();
-    toast("🐾 "+(tag? "@"+(tag==="all"?"전원":tag)+" " : "")+activeRoomLabel()+"에 기록했어요");
+
+    var payload = { room: sbRoomOf(myRoom), sender: "꼬운", target: tag || null, text: raw };
+
+    var finish = function(ok, row){
+      pending = pending.filter(function(x){ return x !== p; });
+      if(ok){
+        if(row) addRemoteRow(row);
+        else resolvePending({ room:myRoom, text:raw });
+        toast(prefix + "실시간으로 올렸어요");
+      } else {
+        pushLocalMsg(raw, tag, true, myRoom);
+        toast("🐾 서버 전송 실패 · 이 기기에만 남겼어요 · 배지를 누르면 다시 연결해요");
+      }
+      if(curTab === "meet"){ meetForceBottom = true; renderMeet(); }
+    };
+
+    try{
+      sb.from(SB_TABLE).insert(payload)
+        .select("id,room,sender,target,text,created_at")
+        .then(function(res){
+          if(res && !res.error && res.data && res.data.length){ finish(true, res.data[0]); return; }
+          /* 응답 반환(select)만 막힌 경우: 행은 들어갔을 수 있으니 최근 기록에서 확인 */
+          sb.from(SB_TABLE).select("id,room,sender,target,text,created_at")
+            .eq("room", payload.room).eq("sender", payload.sender).eq("text", payload.text)
+            .order("created_at", { ascending:false }).limit(1)
+            .then(function(ck){
+              var row = (ck && !ck.error && ck.data && ck.data[0]) ? ck.data[0] : null;
+              var fresh = false;
+              if(row && row.created_at){
+                var age = Date.now() - new Date(row.created_at).getTime();
+                fresh = (!isNaN(age) && age < 120000);
+              }
+              if(fresh){ finish(true, row); } else { finish(false, null); }
+            }, function(){ finish(false, null); });
+        }, function(){ finish(false, null); });
+    }catch(e){ finish(false, null); }
   }
 
   /* ------------------------------------------------------------------ *
@@ -1317,6 +1612,7 @@
       renderMeet();
     }
     else if(act === "send"){ sendChat(); }
+    else if(act === "retry-sb"){ sbInit(); }
     else if(act === "quick-add"){
       var inp = document.getElementById("chatInput");
       if(inp){ inp.value = "@all "; inp.focus(); }
@@ -1376,6 +1672,9 @@
       ev.preventDefault();
       var btn = document.querySelector('[data-act="cal-add"]');
       if(btn) btn.click();
+    }
+    if((ev.key === "Enter" || ev.key === " ") && ev.target && ev.target.id === "servBadge"){
+      ev.preventDefault(); sbInit();
     }
   });
 
@@ -1443,12 +1742,14 @@
   save();
 
   paintHeader();
+  paintServ();
+  sbInit();
   var initial = (location.hash||"").replace("#","") || "dash";
   show(initial, true);
 
   /* 자정 지나 앱을 다시 열었을 때 초기화 */
   document.addEventListener("visibilitychange", function(){
-    if(!document.hidden){ dailyRollover(); render(curTab); paintHeader(); }
+    if(!document.hidden){ dailyRollover(); render(curTab); paintHeader(); if(!sbLive) sbInit(); }
   });
 
   /* 주소의 #탭 으로 바로 열기 (뒤로/앞으로 포함) */
