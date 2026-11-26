@@ -38,7 +38,7 @@
   html[data-theme="dusk"] body{background:radial-gradient(1200px 420px at 50% -160px,#3A2F28 0%,rgba(58,47,40,0) 70%),var(--bg)}
   .app{
     position:relative; max-width:470px; margin:0 auto; min-height:100vh;
-    padding:0 0 96px; background:
+    padding:0 0 calc(104px + env(safe-area-inset-bottom)); background:
       radial-gradient(600px 300px at 100% 0%, rgba(201,138,75,.07), transparent 60%),
       var(--bg);
     box-shadow:0 0 40px rgba(139,90,43,.06);
@@ -312,7 +312,7 @@
   }
   .foot b{color:var(--sub)}
   .bottom{
-    position:fixed; left:50%; transform:translateX(-50%); bottom:10px; z-index:40;
+    position:fixed; left:50%; transform:translateX(-50%); bottom:calc(10px + env(safe-area-inset-bottom)); z-index:40;
     width:calc(100% - 24px); max-width:446px;
     display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:7px;
     background:var(--card); border:1px solid var(--line2); border-radius:22px;
@@ -795,7 +795,7 @@
       + '<input id="chatInput" name="chat" placeholder="꼬운님, 지시를 한 줄로 (@all = 전원)" autocomplete="off" maxlength="300">'
       + '<button class="send" data-act="send">보내기</button>'
       + '</div>';
-    html += '<p class="hint">여기 적은 지시는 이 기기에 기록만 돼요. 실제 지시·전달은 짱아찌와의 채팅에서 해 주세요 🐾</p>';
+    html += '<p class="hint" style="text-align:center">기기에 기록만 돼요 · 실제 전달은 짱아찌와의 채팅에서 🐾</p>';
 
     el.innerHTML = html;
     var box = document.getElementById("chatBox");
@@ -808,7 +808,7 @@
     var box = document.getElementById("chatBox");
     if(!box) return;
     var top = box.getBoundingClientRect().top;
-    var avail = window.innerHeight - top - 188;
+    var avail = window.innerHeight - top - 212;
     avail = Math.max(170, Math.min(avail, Math.round(window.innerHeight*0.66)));
     box.style.maxHeight = avail + "px";
     box.scrollTop = box.scrollHeight;
