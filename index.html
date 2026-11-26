@@ -1207,6 +1207,8 @@
       + '</div>';
     if(sbLive && sbData){
       html += '<p class="hint" style="text-align:center">AI 비서 보고가 실시간으로 도착해요 · 새로고침 없이 바로 보여요 🐾</p>';
+    } else if(sbLive && !sbData){
+      html += '<p class="hint" style="text-align:center">실시간 연결은 됐는데 테이블을 읽지 못했어요 · 읽기 권한(GRANT SELECT)을 확인해 주세요 🐾</p>';
     } else if(sb){
       html += '<p class="hint" style="text-align:center">서버 연결 확인 중 · 지금 적은 내용은 이 기기에도 남겨 둘게요 🐾</p>';
     } else {
