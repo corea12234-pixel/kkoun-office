@@ -279,6 +279,48 @@
   .slot .time small{font-size:9.5px;color:var(--muted);font-weight:700}
   .slot .chips{flex:1;justify-content:flex-end}
 
+  /* crm (체험단) */
+  .crm-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:9px}
+  .crm-sum .bx{background:var(--card3);border:1px solid var(--line);border-radius:15px;padding:9px 5px;text-align:center}
+  .crm-sum .bx b{display:block;font-size:18px;font-weight:800;line-height:1.15;letter-spacing:-.4px}
+  .crm-sum .bx span{font-size:10.5px;color:var(--sub);font-weight:700}
+  .crm-sum .bx.a b{color:#2F7A5E} .crm-sum .bx.w b{color:#96712A} .crm-sum .bx.d b{color:#4A6FA5}
+  html[data-theme="dusk"] .crm-sum .bx.a b{color:#9CDCC2} html[data-theme="dusk"] .crm-sum .bx.w b{color:#EBD199} html[data-theme="dusk"] .crm-sum .bx.d b{color:#AFCDEC}
+  .crm-next{font-size:11.5px;color:var(--sub);background:var(--accent-soft);border-radius:13px;padding:8px 10px;margin-bottom:11px;line-height:1.5}
+  .crm-next b{color:var(--brown)}
+  .crm-next .dd{font-weight:800}
+  ul.crm-list{list-style:none;margin:0;padding:0}
+  ul.crm-list li{
+    position:relative;border:1px solid var(--line);border-radius:16px;background:var(--card3);
+    padding:11px 12px;margin-bottom:8px;
+  }
+  ul.crm-list li.st-active{border-color:var(--ring);background:linear-gradient(170deg,var(--accent-soft),var(--card3) 62%)}
+  ul.crm-list li.st-done,ul.crm-list li.st-rejected{opacity:.62}
+  ul.crm-list li.st-rejected .crm-nm{text-decoration:line-through;text-decoration-color:var(--line2)}
+  .crm-top{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:5px;padding-right:24px}
+  .pf{font-size:10px;font-weight:800;color:#FFF;border-radius:999px;padding:2.5px 8px;letter-spacing:-.2px;white-space:nowrap;background:#7C52C9}
+  .crm-nm{font-size:13.5px;font-weight:800;line-height:1.42;padding-right:22px;word-break:keep-all;letter-spacing:-.2px}
+  .crm-mt{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:5px;font-size:11px;color:var(--sub)}
+  .crm-mt .dd{font-weight:800;color:var(--brown);background:var(--accent-soft);border-radius:999px;padding:1px 7px;font-size:10.5px}
+  .crm-mt .dd.soon{color:#B4553F;background:#FBEAE4}
+  html[data-theme="dusk"] .crm-mt .dd.soon{color:#F3B39F;background:#4A3230}
+  .crm-nt{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5;word-break:keep-all}
+  .stb{
+    border:1px solid var(--line2);background:var(--card);color:var(--sub);font-family:inherit;
+    font-size:10.5px;font-weight:800;border-radius:999px;padding:3.5px 9px;cursor:pointer;white-space:nowrap;
+  }
+  .stb:active{transform:scale(.95)}
+  .stb.on-active{color:#2F7A5E;border-color:#A9D9C6;background:#E8F6F0}
+  .stb.on-waiting{color:#8A6A2A;border-color:#E7D3A6;background:#FBF3DF}
+  .stb.on-done{color:#4A6FA5;border-color:#B9CFEC;background:#EAF1FB}
+  .stb.on-rejected{color:#8B7F86;border-color:#DCD3D8;background:#F4EFF2}
+  html[data-theme="dusk"] .stb.on-active{color:#BFEBD8;border-color:#3F6B5C;background:#2C4A40}
+  html[data-theme="dusk"] .stb.on-waiting{color:#EBD199;border-color:#6B5A34;background:#423A29}
+  html[data-theme="dusk"] .stb.on-done{color:#BFD6F0;border-color:#3F577A;background:#2C3648}
+  html[data-theme="dusk"] .stb.on-rejected{color:#BFB4BA;border-color:#544A50;background:#373135}
+  ul.crm-list li .mini.del{position:absolute;top:9px;right:9px;width:22px;height:22px;flex:0 0 22px;font-size:10px;border-radius:8px}
+  .crm-empty{font-size:12.5px;color:var(--muted);text-align:center;padding:16px 0}
+
   /* calendar */
   .wkbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
   .wkbar .lb{font-size:13px;font-weight:800;color:var(--brown)}
@@ -503,6 +545,136 @@
   ];
   var HOT_SLOTS = ["08","09","10","11"];
 
+  /* ------------------------------------------------------------------ *
+   *  체험단 기본 목록 (2026-11-26 실황)
+   *  - 브리프: 플랫폼명·캠페인명·날짜·상태만. 개인정보(이름·연락처·주소) 없음.
+   *  - 목록을 고칠 때는 CRM_SEED_V 를 1 올려야 기존 사용자 화면에도 반영됨.
+   * ------------------------------------------------------------------ */
+  var CRM_SEED_V = 2;
+  var CRM_SEED = [
+    /* 🎉 진행중(당첨) */
+    {id:"rn-1537936", p:"리뷰노트", n:"제로핏PT · 부산 사하구", d:"2026-12-07", dk:"리뷰마감", st:"active",
+     note:"1:1 PT 2회(10만 원 상당) · 방문 11/30(월)·12/03(목) 예약 확인 중 · 사진10+영상·1,000자"},
+    {id:"cv-204930", p:"체험뷰", n:"라클라우드쇼룸 부산연제점 · 방문기자단", d:"2026-12-17", dk:"리뷰마감", st:"active",
+     note:"원고료 5,000P+사은품(플레이스 리뷰 필수) · 11/27(금) 11시 방문 · 사진15+영상·1,000자"},
+
+    /* ⏳ 발표대기 — 리뷰노트 기존 18건 */
+    {id:"rn-1548272", p:"리뷰노트", n:"데일리담 부착식 펠트 게시판", d:"2026-11-26", dk:"신청마감", st:"waiting", note:"19,780원 · 발표 11/27경"},
+    {id:"rn-1545088", p:"리뷰노트", n:"미미봉봉 막대사탕", d:"2026-11-27", dk:"신청마감", st:"waiting", note:"발표 11/28경"},
+    {id:"rn-1544290", p:"리뷰노트", n:"리피트인 고체탈취제", d:"2026-11-27", dk:"신청마감", st:"waiting", note:"발표 11/28경"},
+    {id:"rn-1544298", p:"리뷰노트", n:"레드컨테이너 바디로션", d:"2026-11-27", dk:"신청마감", st:"waiting", note:"35,000원 상당 · 발표 11/28경"},
+    {id:"rn-1542356", p:"리뷰노트", n:"배가온 골프스윙연습기", d:"2026-11-27", dk:"신청마감", st:"waiting", note:"릴스 캠페인·50,000P · 당첨되면 보고 후 결정"},
+    {id:"rn-1543962", p:"리뷰노트", n:"미친막창 부산명지점 5만 원 이용권", d:"2026-11-27", dk:"신청마감", st:"waiting", note:"발표 11/28경"},
+    {id:"rn-1544036", p:"리뷰노트", n:"한뎃키친 우대갈비 3인", d:"2026-11-27", dk:"신청마감", st:"waiting", note:"릴스 캠페인·50,000P · 당첨되면 보고 후 결정"},
+    {id:"rn-1547658", p:"리뷰노트", n:"카카오브로 초콜릿 세트", d:"2026-11-28", dk:"신청마감", st:"waiting", note:"10,000P · 발표 11/29경"},
+    {id:"rn-1547790", p:"리뷰노트", n:"무한타올 8개 세트", d:"2026-11-28", dk:"신청마감", st:"waiting", note:"발표 11/29경"},
+    {id:"rn-1549167", p:"리뷰노트", n:"아이럭스뷰 눈마사지기", d:"2026-11-29", dk:"신청마감", st:"waiting", note:"327,000원 상당·5,000P · 발표 11/30경"},
+    {id:"rn-1555529", p:"리뷰노트", n:"원스채칼", d:"2026-11-29", dk:"신청마감", st:"waiting", note:"발표 11/30경"},
+    {id:"rn-1543951", p:"리뷰노트", n:"감미로이", d:"2026-11-30", dk:"신청마감", st:"waiting", note:"발표 12/01경"},
+    {id:"rn-1543952", p:"리뷰노트", n:"베이킹맘", d:"2026-11-30", dk:"신청마감", st:"waiting", note:"발표 12/01경"},
+    {id:"rn-1543953", p:"리뷰노트", n:"도나앤데코", d:"2026-11-30", dk:"신청마감", st:"waiting", note:"발표 12/01경"},
+    {id:"rn-1543954", p:"리뷰노트", n:"큐티샵", d:"2026-11-30", dk:"신청마감", st:"waiting", note:"발표 12/01경"},
+    {id:"rn-1543955", p:"리뷰노트", n:"오뉴엘", d:"2026-11-30", dk:"신청마감", st:"waiting", note:"발표 12/01경"},
+    {id:"rn-1543956", p:"리뷰노트", n:"붱순이 팩토리", d:"2026-11-30", dk:"신청마감", st:"waiting", note:"발표 12/01경"},
+    {id:"rn-1559014", p:"리뷰노트", n:"테라프", d:"2026-12-01", dk:"신청마감", st:"waiting", note:"발표 12/02경"},
+
+    /* ⏳ 발표대기 — 리뷰노트 11/26 추가 신청 7건 */
+    {id:"rn-1551666", p:"리뷰노트", n:"석순당 명지본점 · 2인 순두부 석갈비 한상", d:"2026-11-28", dk:"발표", st:"waiting", note:"32,000원 상당 · 확정 · 리뷰마감 12/11"},
+    {id:"rn-1548690", p:"리뷰노트", n:"대화숯불가든 부산명지점 · 소갈비살 한판", d:"2026-11-30", dk:"발표", st:"waiting", note:"59,000원 상당 · 확정 · 리뷰마감 12/13"},
+    {id:"rn-1552323", p:"리뷰노트", n:"진심돈 명지점 · 모듬 한판", d:"2026-12-01", dk:"발표", st:"waiting", note:"48,000원 상당 · 발표일 추정"},
+    {id:"rn-1554037", p:"리뷰노트", n:"수미초밥 명지본점 · 5만 원 식사권", d:"2026-12-04", dk:"발표", st:"waiting", note:"발표일 추정"},
+    {id:"rn-1554673", p:"리뷰노트", n:"일백풍천민물장어 명지직영점 · 자유식사권", d:"2026-12-04", dk:"발표", st:"waiting", note:"7만 원 상당 · 발표일 추정"},
+    {id:"rn-1557466", p:"리뷰노트", n:"화남정돼지국밥 명지점 · 재택 기자단", d:"2026-12-05", dk:"발표", st:"waiting", note:"원고료 10,000P · 발표일 추정"},
+    {id:"rn-1549341", p:"리뷰노트", n:"원카츠명지점 · 돈카츠 식사권", d:"2026-11-30", dk:"발표", st:"waiting", note:"30,000원 상당 · 발표일 추정"},
+
+    /* ⏳ 발표대기 — 체험뷰 */
+    {id:"cv-203879", p:"체험뷰", n:"탄탄면공방 롯데백화점부산본점 · 방문형", d:"2026-12-01", dk:"발표", st:"waiting", note:"30,000원 식사권(2인) · 모집 11/30 마감 · 발표 12/01 전후 추정"},
+
+    /* ⏳ 발표대기 — 클라우드리뷰 신청중 4건 */
+    {id:"cr-1", p:"클라우드리뷰", n:"캐릭터 리무버블 스티커 SET", d:"", dk:"발표", st:"waiting", note:"신청중 · 발표일 미정 (모집 56/10)"},
+    {id:"cr-2", p:"클라우드리뷰", n:"한옥 무드등 DIY키트", d:"", dk:"발표", st:"waiting", note:"신청중 · 발표일 미정 (모집 146/10)"},
+    {id:"cr-3", p:"클라우드리뷰", n:"플로럴 섬유탈취제", d:"", dk:"발표", st:"waiting", note:"신청중 · 발표일 미정 (모집 113/10)"},
+    {id:"cr-4", p:"클라우드리뷰", n:"어린이 초코맛 효소 1BOX", d:"", dk:"발표", st:"waiting", note:"신청중 · 발표일 미정 (모집 53/15)"},
+
+    /* ⏳ 발표대기 — 레뷰 5건 */
+    {id:"rv-1441462", p:"레뷰", n:"[기자단] 플러스클로버 앱후기", d:"", dk:"발표", st:"waiting", note:"10,000P · 발표일 미확인"},
+    {id:"rv-1442988", p:"레뷰", n:"[기자단] 우리 아이 과외도 숨고에서", d:"2026-11-27", dk:"발표", st:"waiting", note:"10,000P · 등록 11/27~11/30"},
+    {id:"rv-1442999", p:"레뷰", n:"[기자단] 우리아이예체능레슨도숨고에서", d:"", dk:"발표", st:"waiting", note:"10,000P · 발표일 미확인"},
+    {id:"rv-1440567", p:"레뷰", n:"[기자단] 중고명품다올 남포점", d:"", dk:"발표", st:"waiting", note:"30,000P · 부산 남포동 · 5명 모집"},
+    {id:"rv-1434609", p:"레뷰", n:"[기자단] 헤바하우스", d:"2026-11-29", dk:"신청마감", st:"waiting", note:"10,000P"},
+
+    /* ⏳ 발표대기 — 강남맛집 2 · 디너의여왕 1 · 키플랫 1 */
+    {id:"gn-1", p:"강남맛집", n:"평강돼지국밥 · 부산 강서", d:"2026-12-03", dk:"발표", st:"waiting", note:"3만 원 체험권(2인) · 등록 12/04~12/24"},
+    {id:"gn-2", p:"강남맛집", n:"오케이숯불갈비 용호점 · 부산 남구", d:"2026-12-02", dk:"발표", st:"waiting", note:"2만 8천 원 체험권(2인) · 등록 12/03~12/23"},
+    {id:"dq-1", p:"디너의여왕", n:"[기자단] 프리즘 라페스타점 2차", d:"2026-12-02", dk:"발표", st:"waiting", note:"5,000P"},
+    {id:"kp-1", p:"키플랫", n:"브런치 카페 아워오차드 · 부산 기장", d:"2026-12-04", dk:"발표", st:"waiting", note:"2~3인 브런치+음료 무료 · 신청 27/10"}
+  ];
+
+  var CRM_PF_COLOR = {
+    "리뷰노트":"#7C52C9", "체험뷰":"#3E8E7E", "클라우드리뷰":"#3B7DD8", "레뷰":"#DF8A3A",
+    "강남맛집":"#C0574F", "디너의여왕":"#B0548E", "키플랫":"#5B8C3A"
+  };
+
+  /* 캘린더 기본 일정 */
+  var CAL_SEED_V = 1;
+  var CAL_SEED = [
+    {id:"cal-s-1127a", date:"2026-11-27", text:"11:00 라클라우드쇼룸 부산연제점 방문 (플레이스 예약 필수)"},
+    {id:"cal-s-1127b", date:"2026-11-27", text:"레뷰 숨고 기자단 2건 발표"},
+    {id:"cal-s-1128",  date:"2026-11-28", text:"리뷰노트 7건 발표(11/27 마감분) · 석순당 명지본점 발표"},
+    {id:"cal-s-1130a", date:"2026-11-30", text:"제로핏PT 1회차 방문 (11:00 예약 확인)"},
+    {id:"cal-s-1130b", date:"2026-11-30", text:"리뷰노트 대화숯불가든·원카츠 발표"},
+    {id:"cal-s-1201",  date:"2026-12-01", text:"리뷰노트 진심돈 · 체험뷰 탄탄면공방 발표 전후"},
+    {id:"cal-s-1202",  date:"2026-12-02", text:"강남맛집 오케이숯불갈비 · 디너의여왕 프리즘 발표"},
+    {id:"cal-s-1203",  date:"2026-12-03", text:"제로핏PT 2회차 방문 (11:00 예약 확인)"},
+    {id:"cal-s-1204",  date:"2026-12-04", text:"수미초밥·일백풍천장어 · 키플랫 아워오차드 발표"},
+    {id:"cal-s-1207",  date:"2026-12-07", text:"제로핏PT 리뷰 마감"},
+    {id:"cal-s-1211",  date:"2026-12-11", text:"석순당 명지본점 리뷰 마감"},
+    {id:"cal-s-1213",  date:"2026-12-13", text:"대화숯불가든 명지점 리뷰 마감"},
+    {id:"cal-s-1217",  date:"2026-12-17", text:"라클라우드쇼룸 리뷰 마감"}
+  ];
+
+  /* 예전 저장값(crm: {text, done, stage}) → 새 모양으로 */
+  function migrateCrm(items){
+    if(!Array.isArray(items)) return [];
+    return items.map(function(c){
+      if(!c || typeof c !== "object") return null;
+      if(c.n == null && c.text != null){
+        var st = c.done ? "done" : (c.stage === "waiting" ? "waiting" : "active");
+        return {id:c.id || uid(), p:"직접 추가", n:String(c.text), d:"", dk:"발표", st:st,
+                note:c.memo||"", seed:0};
+      }
+      if(!c.id) c.id = uid();
+      if(!c.st) c.st = c.done ? "done" : "waiting";
+      if(!c.dk) c.dk = "발표";
+      if(c.d == null) c.d = "";
+      if(c.note == null) c.note = "";
+      if(c.p == null) c.p = "직접 추가";
+      return c;
+    }).filter(Boolean);
+  }
+
+  function seedCrm(){
+    if((S.crmV||0) >= CRM_SEED_V) return;
+    var have = {};
+    S.crm.forEach(function(c){ if(c && c.id) have[c.id] = true; });
+    CRM_SEED.forEach(function(s){
+      if(!have[s.id]){
+        S.crm.push({id:s.id, p:s.p, n:s.n, d:s.d, dk:s.dk, st:s.st, note:s.note, seed:1});
+      }
+    });
+    S.crmV = CRM_SEED_V;
+  }
+
+  function seedCalendar(){
+    if((S.calV||0) >= CAL_SEED_V) return;
+    var have = {};
+    S.calendar.forEach(function(c){ if(c && c.id) have[c.id] = true; });
+    CAL_SEED.forEach(function(s){
+      if(!have[s.id]) S.calendar.push({id:s.id, date:s.date, text:s.text, seed:1});
+    });
+    S.calV = CAL_SEED_V;
+  }
+
   function freshState(){
     var st = {
       v:1, day: todayKey(), theme:"warm",
@@ -552,6 +724,7 @@
           HOT_SLOTS.forEach(function(h){ if(!st.hot[h]) st.hot[h]={hot:false,thread:false}; });
           if(!Array.isArray(st.routine) || !st.routine.length) st.routine = freshState().routine;
           if(!Array.isArray(st.crm)) st.crm = [];
+          st.crm = migrateCrm(st.crm);
           if(!Array.isArray(st.calendar)) st.calendar = [];
           if(!Array.isArray(st.noteChecks)) st.noteChecks = [];
           if(typeof st.memo !== "string") st.memo = "";
@@ -564,6 +737,8 @@
   }
 
   var S = load();
+  seedCrm();
+  seedCalendar();
   var room = "main";
   var cmdTarget = "jjang";
   var weekOffset = 0;
@@ -666,7 +841,7 @@
   }
   function overallStats(){
     var r = routineStats(), h = hotStats();
-    var crmDone = S.crm.filter(function(c){ return c.done; }).length;
+    var crmDone = S.crm.filter(function(c){ return c.st==="done"; }).length;
     var crmTotal = S.crm.length;
     var total = r.total + h.total + crmTotal, done = r.done + h.done + crmDone;
     return {total:total, done:done, pct: total? Math.round(done/total*100) : 0};
@@ -719,7 +894,7 @@
     html += '  <div class="card-hd"><h2>📌 오늘의 진행</h2><span class="pill">'+overallStats().pct+'%</span></div>';
     html += '  <div class="chips">'
       + '<button class="chip" data-tab="hot">🛒 핫딜·스레드 '+h.done+'/'+h.total+'</button>'
-      + '<button class="chip" data-tab="chk">📝 체험단 '+S.crm.filter(function(c){return !c.done;}).length+'건 남음</button>'
+      + '<button class="chip" data-tab="chk">📝 체험단 진행 '+S.crm.filter(function(c){return c.st==="active";}).length+' · 대기 '+S.crm.filter(function(c){return (c.st||"waiting")==="waiting";}).length+'</button>'
       + '<button class="chip" data-tab="cal">📅 이번 주 일정 '+S.calendar.filter(function(c){return isThisWeek(c.date);}).length+'</button>'
       + '</div>';
     html += '</div>';
@@ -843,39 +1018,123 @@
   /* ------------------------------------------------------------------ *
    *  체험단
    * ------------------------------------------------------------------ */
-  function crmRow(c){
-    return '<li class="'+(c.done?"done":"")+'">'
-      + '<button class="cb" data-act="crm-toggle" data-id="'+c.id+'" aria-label="완료 토글" aria-pressed="'+c.done+'">🐾</button>'
-      + '<span class="li-txt">'+esc(c.text)+(c.memo?'<div class="li-time">'+esc(c.memo)+'</div>':'')+'</span>'
-      + '<button class="mini" data-act="crm-move" data-id="'+c.id+'" aria-label="진행·대기 이동" title="진행·대기 이동">⇅</button>'
-      + '<button class="mini danger" data-act="crm-del" data-id="'+c.id+'" aria-label="삭제">✕</button>'
+  var crmFilter = "all";
+  var CRM_ST = {
+    active:  {em:"🎉", label:"진행중",   cls:"on-active"},
+    waiting: {em:"⏳", label:"발표대기", cls:"on-waiting"},
+    done:    {em:"✅", label:"완료",     cls:"on-done"},
+    rejected:{em:"🚫", label:"미선정",   cls:"on-rejected"}
+  };
+  var CRM_CYCLE = ["waiting", "active", "done", "rejected"];
+
+  function dLeft(dstr){
+    if(!dstr) return null;
+    var p = String(dstr).split("-");
+    if(p.length !== 3) return null;
+    var t = new Date(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10));
+    var n = new Date();
+    var t0 = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+    return Math.round((t - t0) / 86400000);
+  }
+  function mdLabel(dstr){
+    var p = String(dstr).split("-");
+    return (p.length===3) ? (parseInt(p[1],10)+"/"+parseInt(p[2],10)) : dstr;
+  }
+  function ddayLabel(dstr){
+    var d = dLeft(dstr);
+    if(d === null) return "";
+    if(d === 0) return "D-DAY";
+    return (d > 0) ? "D-"+d : "D+"+Math.abs(d);
+  }
+
+  function crmCard(c){
+    var key = c.st || "waiting";
+    var meta = CRM_ST[key] || CRM_ST.waiting;
+    var col = CRM_PF_COLOR[c.p] || "#8C7FA8";
+    var live = (key === "active" || key === "waiting");
+    var dl = dLeft(c.d);
+    var ddTxt = live ? ddayLabel(c.d) : "";
+    var soon = (dl !== null && dl <= 3);
+
+    var mt = c.d
+      ? '<span>'+esc(c.dk||"발표")+' '+mdLabel(c.d)+'</span>'
+      : '<span>'+(c.dk||"발표")+'일 미정</span>';
+    if(ddTxt) mt += '<span class="dd'+(soon?" soon":"")+'">'+ddTxt+'</span>';
+
+    return '<li class="st-'+key+'">'
+      + '<button class="mini danger del" data-act="crm-del" data-id="'+c.id+'" aria-label="목록에서 지우기">✕</button>'
+      + '<div class="crm-top">'
+      +   '<span class="pf" style="background:'+col+'">'+esc(c.p||"직접 추가")+'</span>'
+      +   '<button class="stb '+meta.cls+'" data-act="crm-status" data-id="'+c.id+'" title="누르면 상태가 바뀝니다">'+meta.em+' '+meta.label+'</button>'
+      + '</div>'
+      + '<div class="crm-nm">'+esc(c.n||c.text||"")+'</div>'
+      + '<div class="crm-mt">'+mt+'</div>'
+      + (c.note ? '<div class="crm-nt">'+esc(c.note)+'</div>' : '')
       + '</li>';
   }
 
+  function crmSort(a, b){
+    var order = {active:0, waiting:1, done:2, rejected:3};
+    var oa = order[a.st||"waiting"], ob = order[b.st||"waiting"];
+    if(oa !== ob) return oa - ob;
+    var da = a.d || "9999-12-31", db = b.d || "9999-12-31";
+    if(da === db) return 0;
+    return (da < db) ? -1 : 1;
+  }
+
   function renderChk(){
-    var doing = S.crm.filter(function(c){ return c.stage!=="waiting"; });
-    var waiting = S.crm.filter(function(c){ return c.stage==="waiting"; });
     var el = document.getElementById("p-chk");
-    var doneCnt = S.crm.filter(function(c){ return c.done; }).length;
+    var cnt = {all:S.crm.length, active:0, waiting:0, done:0, rejected:0};
+    S.crm.forEach(function(c){ var k = c.st||"waiting"; cnt[k] = (cnt[k]||0)+1; });
+
+    /* 가장 가까운 예정 (오늘 이후 날짜가 있는 건 중 제일 가까운 것) */
+    var upcoming = null, upLeft = null;
+    S.crm.forEach(function(c){
+      if(c.st !== "active" && c.st !== "waiting") return;
+      var dl = dLeft(c.d);
+      if(dl === null) return;
+      if(upLeft === null || (dl >= 0 && (upLeft < 0 || dl < upLeft))){ upcoming = c; upLeft = dl; }
+    });
+
+    var items = S.crm.filter(function(c){ return crmFilter==="all" || (c.st||"waiting")===crmFilter; });
+    items.sort(crmSort);
+
+    var chips = [
+      {id:"all",     label:"전체",     n:cnt.all},
+      {id:"active",  label:"🎉 진행중", n:cnt.active},
+      {id:"waiting", label:"⏳ 발표대기", n:cnt.waiting},
+      {id:"done",    label:"✅ 완료",   n:cnt.done}
+    ];
+    if(cnt.rejected) chips.push({id:"rejected", label:"🚫 미선정", n:cnt.rejected});
 
     var html = '<div class="card">'
-      + '<div class="card-hd"><h2>🐶 체험단 진행</h2><span class="pill">🦴 '+doing.filter(function(c){return c.done;}).length+' / '+doing.length+'</span></div>'
-      + '<ul class="checks">';
-    html += doing.length ? doing.map(crmRow).join("") : '<li><span class="li-txt" style="color:var(--muted)">진행 중인 체험단이 없어요.</span></li>';
-    html += '</ul>'
-      + '<form class="add" data-add="crm-doing"><input name="text" placeholder="신청한 체험단 추가 (브랜드 · 제품)" autocomplete="off" maxlength="80"><button type="submit">추가</button></form>'
+      + '<div class="card-hd"><h2>🐶 체험단 진행</h2><span class="pill">🦴 총 '+cnt.all+'건</span></div>'
+      + '<div class="crm-sum">'
+      +   '<div class="bx a"><b>'+cnt.active+'</b><span>🎉 진행중</span></div>'
+      +   '<div class="bx w"><b>'+cnt.waiting+'</b><span>⏳ 발표대기</span></div>'
+      +   '<div class="bx d"><b>'+cnt.done+'</b><span>✅ 완료</span></div>'
       + '</div>';
 
-    html += '<div class="card">'
-      + '<div class="card-hd"><h2>⏳ 대기 · 후보</h2><span class="pill">'+waiting.length+'건</span></div>'
-      + '<ul class="checks">';
-    html += waiting.length ? waiting.map(crmRow).join("") : '<li><span class="li-txt" style="color:var(--muted)">대기 중인 후보가 없어요.</span></li>';
-    html += '</ul>'
-      + '<form class="add" data-add="crm-waiting"><input name="text" placeholder="후보·발표 대기 추가" autocomplete="off" maxlength="80"><button type="submit">추가</button></form>'
+    if(upcoming){
+      html += '<div class="crm-next">가장 가까운 일정 · <b>'+esc(upcoming.dk||"발표")+' '+mdLabel(upcoming.d)+"</b> " + esc(upcoming.n)
+        + ' <span class="dd">'+ddayLabel(upcoming.d)+'</span></div>';
+    }
+
+    html += '<div class="chips" style="margin-bottom:11px">'
+      + chips.map(function(ch){
+          return '<button class="chip'+(crmFilter===ch.id?" on":"")+'" data-act="crm-filter" data-id="'+ch.id+'" aria-pressed="'+(crmFilter===ch.id)+'">'+ch.label+' '+ch.n+'</button>';
+        }).join("")
       + '</div>';
+
+    html += items.length
+      ? '<ul class="crm-list">'+items.map(crmCard).join("")+'</ul>'
+      : '<div class="crm-empty">이 상태의 체험단이 없어요 🐾</div>';
+
+    html += '<form class="add" data-add="crm-waiting"><input name="text" placeholder="체험단 직접 추가 (플랫폼 · 캠페인명)" autocomplete="off" maxlength="80"><button type="submit">추가</button></form>';
+    html += '</div>';
 
     html += '<div class="card tight">'
-      + '<p class="hint" style="margin:0">🐾 체크는 완료 표시예요. ⇅ 를 누르면 진행 ↔ 대기로 옮겨집니다. 총 '+S.crm.length+'건 중 '+doneCnt+'건 완료.</p>'
+      + '<p class="hint" style="margin:0">🐾 상태 뱃지를 누르면 <b>발표대기 → 진행중 → 완료 → 미선정</b> 순서로 바뀝니다. ✕ 는 목록에서 지우기(내 화면에서만).</p>'
       + '</div>';
 
     el.innerHTML = html;
@@ -1062,13 +1321,18 @@
       var inp = document.getElementById("chatInput");
       if(inp){ inp.value = "@all "; inp.focus(); }
     }
-    else if(act === "crm-toggle"){
+    else if(act === "crm-status"){
       var c = S.crm.find(function(x){ return x.id===id; });
-      if(c){ c.done = !c.done; save(); renderChk(); }
+      if(c){
+        var ci = CRM_CYCLE.indexOf(c.st||"waiting");
+        c.st = CRM_CYCLE[(ci < 0 ? 0 : ci + 1) % CRM_CYCLE.length];
+        c.done = (c.st === "done");
+        save(); renderChk();
+        toast(CRM_ST[c.st].em+" "+CRM_ST[c.st].label+"(으)로 바꿨어요");
+      }
     }
-    else if(act === "crm-move"){
-      var c2 = S.crm.find(function(x){ return x.id===id; });
-      if(c2){ c2.stage = (c2.stage==="waiting") ? "doing" : "waiting"; save(); renderChk(); toast(c2.stage==="waiting"?"대기로 옮겼어요":"진행으로 옮겼어요"); }
+    else if(act === "crm-filter"){
+      crmFilter = id || "all"; renderChk();
     }
     else if(act === "crm-del"){
       S.crm = S.crm.filter(function(x){ return x.id!==id; });
@@ -1127,7 +1391,8 @@
       S.routine.push({id:uid(), text:val, done:false});
       save(); renderDash();
     } else if(kind === "crm-doing" || kind === "crm-waiting"){
-      S.crm.push({id:uid(), text:val, done:false, stage:(kind==="crm-waiting"?"waiting":"doing")});
+      S.crm.push({id:uid(), p:"직접 추가", n:val, d:"", dk:"발표", note:"",
+                  st:(kind==="crm-waiting"?"waiting":"active"), done:false, seed:0});
       save(); renderChk();
     } else if(kind === "note"){
       S.noteChecks.push({id:uid(), text:val, done:false});
